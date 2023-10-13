@@ -15,8 +15,8 @@ public class SavingsAccountDao {
 	
 	public int createSavingAccount(Account savingsaccount) throws ClassNotFoundException {
         String INSERT_ACCOUNT_SQL = "INSERT INTO savings_accounts" +
-            "  (account_no, account_type, balance , user_id, interestRate, interest_earned) VALUES " +
-            " (?, ?, ?, ?, ?, ?);";
+            "  (account_no, account_type, balance , user_id, interestRate, interest_earned, created_date) VALUES " +
+            " (?, ?, ?, ?, ?, ?, ?);";
 
         int result = 0;
 
@@ -33,6 +33,7 @@ public class SavingsAccountDao {
             preparedStatement.setInt(4, savingsaccount.getUser_id());
             preparedStatement.setFloat(5, interestRate);
             preparedStatement.setFloat(6, 0.0f);
+            preparedStatement.setString(7, java.time.LocalDate.now().toString());
             //User userFromDb= new User();
             
           
@@ -159,7 +160,6 @@ public class SavingsAccountDao {
 		
         return error;
     }
-	
 	private void printSQLException(SQLException ex) {
         for (Throwable e: ex) {
             if (e instanceof SQLException) {

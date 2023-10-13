@@ -8,8 +8,16 @@ public class SavingsAccount extends Account{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-
+	private String created_date;
 	
+	public String getCreated_date() {
+		return created_date;
+	}
+
+	public void setCreated_date(String created_date) {
+		this.created_date = created_date;
+	}
+
 	@Override
 	public int getId() {
 		// TODO Auto-generated method stub

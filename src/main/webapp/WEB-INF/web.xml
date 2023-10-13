@@ -6,4 +6,7 @@
     <welcome-file>home.jsp</welcome-file>
     
   </welcome-file-list>
+  <listener>
+    <listener-class>com.financeSystem.listener.InterestCalServletContextListener</listener-class>
+	</listener>
 </web-app>
