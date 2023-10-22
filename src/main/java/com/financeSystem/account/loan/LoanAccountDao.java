@@ -1,7 +1,6 @@
 package com.financeSystem.account.loan;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -12,35 +11,35 @@ import com.financeSystem.account.Account;
 
 public class LoanAccountDao {
 	private final float interestRate=8.5f;
+	private Connection con;
+	private String query;
+	private PreparedStatement pst;
+	private ResultSet rs;
 	
-	public int createLoanAccount(Account loanAccount) throws ClassNotFoundException {
+	public LoanAccountDao(Connection con) {
+		this.con = con;
+	}
+	
+	public int createLoanAccount(Account loanAccount) {
         String INSERT_ACCOUNT_SQL = "INSERT INTO loan_accounts" +
             "  (account_no, created_date, loan_balance, interestRate, interest_balance, user_id, account_type) VALUES " +
             " (?, ?, ?, ?, ?, ?, ?);";
 
         int result = 0;
 
-        Class.forName("com.mysql.jdbc.Driver");
+        try {
 
-        try (Connection connection = DriverManager
-            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
-
-            // Step 2:Create a statement using connection object
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ACCOUNT_SQL)) {
-            preparedStatement.setString(1, loanAccount.getAccount_no());
-            preparedStatement.setString(2, java.time.LocalDate.now().toString());
-            preparedStatement.setFloat(3, loanAccount.getBalance());
-            preparedStatement.setFloat(4, interestRate);
-            preparedStatement.setFloat(5, 0.0f);
-            preparedStatement.setInt(6, loanAccount.getUser_id());
-            preparedStatement.setString(7, loanAccount.getAccount_type());
-            //User userFromDb= new User();
+            PreparedStatement pst = con.prepareStatement(INSERT_ACCOUNT_SQL);
+            pst.setString(1, loanAccount.getAccount_no());
+            pst.setString(2, java.time.LocalDate.now().toString());
+            pst.setFloat(3, loanAccount.getBalance());
+            pst.setFloat(4, interestRate);
+            pst.setFloat(5, 0.0f);
+            pst.setInt(6, loanAccount.getUser_id());
+            pst.setString(7, loanAccount.getAccount_type());
             
-          
-
-            System.out.println(preparedStatement);
-            // Step 3: Execute the query or update query
-            result = preparedStatement.executeUpdate();
+            System.out.println(pst);
+            result = pst.executeUpdate();
 
         } catch (SQLException e) {
             // process sql exception
@@ -48,20 +47,16 @@ public class LoanAccountDao {
         }
         return result;
     }
-	public List<LoanAccount> getAccountByUserId(int user_id) throws ClassNotFoundException {
+	public List<LoanAccount> getAccountByUserId(int user_id) {
 		List<LoanAccount> accountList= new ArrayList<LoanAccount>();
-		Class.forName("com.mysql.jdbc.Driver");
 
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from loan_accounts where user_id = ?")) {
-			preparedStatement.setInt(1, user_id);
+			pst = con.prepareStatement("select * from loan_accounts where user_id = ?"); 
+			pst.setInt(1, user_id);
 
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
+			System.out.println(pst);
+			rs = pst.executeQuery();
 			 while (rs.next()) {
 				 LoanAccount savingsAccount=new LoanAccount();
 				 savingsAccount.setAccount_no(rs.getString("account_no"));
@@ -81,20 +76,16 @@ public class LoanAccountDao {
 		}
 		return accountList;
 	}
-	public LoanAccount getAccountByAccountId(int account_id) throws ClassNotFoundException {
+	public LoanAccount getAccountByAccountId(int account_id) {
 		LoanAccount accountFromDb= new LoanAccount();
-		Class.forName("com.mysql.jdbc.Driver");
 
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from loan_accounts where id = ?")) {
-			preparedStatement.setInt(1, account_id);
+			pst = con.prepareStatement("select * from loan_accounts where id = ?");
+			pst.setInt(1, account_id);
 
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
+			System.out.println(pst);
+			rs = pst.executeQuery();
 			 while (rs.next()) {
 				 accountFromDb.setAccount_no(rs.getString("account_no"));
 				 accountFromDb.setBalance(rs.getFloat("loan_balance"));
@@ -112,7 +103,7 @@ public class LoanAccountDao {
 		return accountFromDb;
 	}
 	
-	public String transactionUpdateLoanAccount(int account_id, float amount, String transaction_type) throws ClassNotFoundException {
+	public String transactionUpdateLoanAccount(int account_id, float amount, String transaction_type) {
 		LoanAccount accountFromDb= getAccountByAccountId(account_id);
 		String withdrawValid="";
 		float balance=0.0f;
@@ -130,23 +121,15 @@ public class LoanAccountDao {
 		if(balance!=0.0f) {
 			String UPDATE_ACCOUNT_SQL = "UPDATE loan_accounts SET loan_balance = ? WHERE id = ?;";
 
-		        Class.forName("com.mysql.jdbc.Driver");
-
-		        try (Connection connection = DriverManager
-		            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
-
-		            // Step 2:Create a statement using connection object
-		            PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_ACCOUNT_SQL)) {
-		            preparedStatement.setFloat(1, balance);
-		            preparedStatement.setInt(2, account_id);
+		        try {
+		            pst = con.prepareStatement(UPDATE_ACCOUNT_SQL); 
+		            pst.setFloat(1, balance);
+		            pst.setInt(2, account_id);
 		            
-		            //User userFromDb= new User();
-		            
-		          
 
-		            System.out.println(preparedStatement);
+		            System.out.println(pst);
 		            // Step 3: Execute the query or update query
-		            preparedStatement.executeUpdate();
+		            pst.executeUpdate();
 		            error="success";
 		        } catch (SQLException e) {
 		            // process sql exception
@@ -159,55 +142,35 @@ public class LoanAccountDao {
 	
 	public void loanInterestCalculate() {
     	
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		String getDateNow=java.time.LocalDate.now().toString();
 		String getDate=getDateNow.substring(8);
 		
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from loan_accounts where created_date like?")) {
-			preparedStatement.setString(1, "%"+getDate);
-			
-			
-			
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
-			
-			
-			
-			 while (rs.next()) {
-				 int id=rs.getInt("id");
-				 float balance=rs.getFloat("loan_balance");
-				 float interestRate=rs.getFloat("interestRate");
-				 float interest_earned=rs.getFloat("interest_balance");
-				 float interest_earned_new=interest_earned+((balance*interestRate)/100);
-				 float newBalance=balance+(balance*interestRate)/100;
-				 
-				 
-				 String UPDATE_ACCOUNT_SQL = "UPDATE loan_accounts SET loan_balance = ?, interest_balance = ? WHERE id = ?;";
-				 
+			pst = con.prepareStatement("select * from loan_accounts where created_date like?");
+			pst.setString(1, "%"+getDate);
 
-				            // Step 2:Create a statement using connection object
-				            PreparedStatement preparedStatement2 = connection.prepareStatement(UPDATE_ACCOUNT_SQL); 
-				            preparedStatement2.setFloat(1, newBalance);
-				            preparedStatement2.setFloat(2, interest_earned_new);
-				            preparedStatement2.setInt(3, id);
+			System.out.println(pst);
+			ResultSet rs = pst.executeQuery();
+
+			while (rs.next()) {
+				int id=rs.getInt("id");
+				float balance=rs.getFloat("loan_balance");
+				float interestRate=rs.getFloat("interestRate");
+				float interest_earned=rs.getFloat("interest_balance");
+				float interest_earned_new=interest_earned+((balance*interestRate)/100);
+				float newBalance=balance+(balance*interestRate)/100;
+				 
+				 
+				String UPDATE_ACCOUNT_SQL = "UPDATE loan_accounts SET loan_balance = ?, interest_balance = ? WHERE id = ?;";
+				pst = con.prepareStatement(UPDATE_ACCOUNT_SQL); 
+				pst.setFloat(1, newBalance);
+				pst.setFloat(2, interest_earned_new);
+				pst.setInt(3, id);
 				            
-				            //User userFromDb= new User();
+				System.out.println(pst);
 				            
-				          
-
-				            System.out.println(preparedStatement2);
-				            // Step 3: Execute the query or update query
-				            preparedStatement2.executeUpdate();
+				pst.executeUpdate();
 				 
 			 }
 

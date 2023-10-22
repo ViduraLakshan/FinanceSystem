@@ -13,6 +13,7 @@ import javax.servlet.http.HttpSession;
 import com.financeSystem.account.fixed.FixedAccountDao;
 import com.financeSystem.account.loan.LoanAccountDao;
 import com.financeSystem.account.savings.SavingsAccountDao;
+import com.financeSystem.connection.DbConnection;
 
 /**
  * Servlet implementation class AccountController
@@ -26,9 +27,13 @@ public class AccountController extends HttpServlet {
 	private LoanAccountDao loanAccountDao;
 
     public void init() {
-    	savingsAccountDao = new SavingsAccountDao();
-    	fixedDepositDao=new FixedAccountDao();
-    	loanAccountDao=new LoanAccountDao();
+    	try {
+    	savingsAccountDao = new SavingsAccountDao(DbConnection.getConnection());
+    	fixedDepositDao=new FixedAccountDao(DbConnection.getConnection());
+    	loanAccountDao=new LoanAccountDao(DbConnection.getConnection());
+    	}catch(Exception e) {
+			e.printStackTrace();
+		}
     }
     /**
      * @see HttpServlet#HttpServlet()

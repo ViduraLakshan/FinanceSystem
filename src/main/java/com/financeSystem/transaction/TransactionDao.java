@@ -1,8 +1,8 @@
 package com.financeSystem.transaction;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.financeSystem.account.fixed.FixedDepositAccount;
@@ -10,9 +10,16 @@ import com.financeSystem.account.loan.LoanAccount;
 import com.financeSystem.account.savings.SavingsAccount;
 
 public class TransactionDao {
+	private final float interestRate=8.5f;
+	private Connection con;
+	private String query;
+	private PreparedStatement pst;
+	private ResultSet rs;
 	
-    
-	public int createTransactio(SavingsAccount savingsAccount, float amount, String transaction_type,String account_type) throws ClassNotFoundException {
+	public TransactionDao(Connection con) {
+		this.con = con;
+	}
+	public int createTransactio(SavingsAccount savingsAccount, float amount, String transaction_type,String account_type) {
 		
 		
 		String INSERT_ACCOUNT_SQL = "INSERT INTO transaction_details" +
@@ -21,27 +28,19 @@ public class TransactionDao {
 
         int result = 0;
 
-        Class.forName("com.mysql.jdbc.Driver");
+        try {
 
-        try (Connection connection = DriverManager
-            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+            pst = con.prepareStatement(INSERT_ACCOUNT_SQL);
+            pst.setString(1, savingsAccount.getAccount_no());
+            pst.setString(2, java.time.LocalDate.now().toString());
+            pst.setFloat(3, savingsAccount.getBalance());
+            pst.setString(4, transaction_type);
+            pst.setInt(5, savingsAccount.getId());
+            pst.setFloat(6, amount);
+            pst.setString(7, account_type);
 
-            // Step 2:Create a statement using connection object
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ACCOUNT_SQL)) {
-            preparedStatement.setString(1, savingsAccount.getAccount_no());
-            preparedStatement.setString(2, java.time.LocalDate.now().toString());
-            preparedStatement.setFloat(3, savingsAccount.getBalance());
-            preparedStatement.setString(4, transaction_type);
-            preparedStatement.setInt(5, savingsAccount.getId());
-            preparedStatement.setFloat(6, amount);
-            preparedStatement.setString(7, account_type);
-            //User userFromDb= new User();
-            
-          
-
-            System.out.println(preparedStatement);
-            // Step 3: Execute the query or update query
-            result = preparedStatement.executeUpdate();
+            System.out.println(pst);
+            result = pst.executeUpdate();
 
         } catch (SQLException e) {
             // process sql exception
@@ -49,36 +48,28 @@ public class TransactionDao {
         }
         return result;
     }
-	public int createTransactio(FixedDepositAccount fixedDepositAccount, float amount, String transaction_type,String account_type) throws ClassNotFoundException {
-		
-		
+	public int createTransactio(FixedDepositAccount fixedDepositAccount, float amount, String transaction_type,String account_type) {
+
 		String INSERT_ACCOUNT_SQL = "INSERT INTO transaction_details" +
             "  (account_no , transaction_date , balance , detail , account_id, amount, account_type) VALUES " +
             " (?, ?, ?, ?, ?, ?, ?);";
 
         int result = 0;
 
-        Class.forName("com.mysql.jdbc.Driver");
+        try {
 
-        try (Connection connection = DriverManager
-            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+            pst = con.prepareStatement(INSERT_ACCOUNT_SQL);
+            pst.setString(1, fixedDepositAccount.getAccount_no());
+            pst.setString(2, java.time.LocalDate.now().toString());
+            pst.setFloat(3, fixedDepositAccount.getBalance());
+            pst.setString(4, transaction_type);
+            pst.setInt(5, fixedDepositAccount.getId());
+            pst.setFloat(6, amount);
+            pst.setString(7, account_type);
 
-            // Step 2:Create a statement using connection object
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ACCOUNT_SQL)) {
-            preparedStatement.setString(1, fixedDepositAccount.getAccount_no());
-            preparedStatement.setString(2, java.time.LocalDate.now().toString());
-            preparedStatement.setFloat(3, fixedDepositAccount.getBalance());
-            preparedStatement.setString(4, transaction_type);
-            preparedStatement.setInt(5, fixedDepositAccount.getId());
-            preparedStatement.setFloat(6, amount);
-            preparedStatement.setString(7, account_type);
-            //User userFromDb= new User();
-            
-          
-
-            System.out.println(preparedStatement);
+            System.out.println(pst);
             // Step 3: Execute the query or update query
-            result = preparedStatement.executeUpdate();
+            result = pst.executeUpdate();
 
         } catch (SQLException e) {
             // process sql exception
@@ -87,7 +78,7 @@ public class TransactionDao {
         return result;
     }
 	
-public int createTransactio(LoanAccount loanAccountAccount, float amount, String transaction_type,String account_type) throws ClassNotFoundException {
+public int createTransactio(LoanAccount loanAccountAccount, float amount, String transaction_type,String account_type) {
 		
 		
 		String INSERT_ACCOUNT_SQL = "INSERT INTO transaction_details" +
@@ -96,27 +87,20 @@ public int createTransactio(LoanAccount loanAccountAccount, float amount, String
 
         int result = 0;
 
-        Class.forName("com.mysql.jdbc.Driver");
+        try {
 
-        try (Connection connection = DriverManager
-            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+            pst = con.prepareStatement(INSERT_ACCOUNT_SQL);
+            pst.setString(1, loanAccountAccount.getAccount_no());
+            pst.setString(2, java.time.LocalDate.now().toString());
+            pst.setFloat(3, loanAccountAccount.getBalance());
+            pst.setString(4, transaction_type);
+            pst.setInt(5, loanAccountAccount.getId());
+            pst.setFloat(6, amount);
+            pst.setString(7, account_type);
 
-            // Step 2:Create a statement using connection object
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ACCOUNT_SQL)) {
-            preparedStatement.setString(1, loanAccountAccount.getAccount_no());
-            preparedStatement.setString(2, java.time.LocalDate.now().toString());
-            preparedStatement.setFloat(3, loanAccountAccount.getBalance());
-            preparedStatement.setString(4, transaction_type);
-            preparedStatement.setInt(5, loanAccountAccount.getId());
-            preparedStatement.setFloat(6, amount);
-            preparedStatement.setString(7, account_type);
-            //User userFromDb= new User();
-            
-          
-
-            System.out.println(preparedStatement);
+            System.out.println(pst);
             // Step 3: Execute the query or update query
-            result = preparedStatement.executeUpdate();
+            result = pst.executeUpdate();
 
         } catch (SQLException e) {
             // process sql exception

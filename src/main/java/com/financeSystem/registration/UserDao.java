@@ -16,29 +16,31 @@ import com.financeSystem.sequrity.EncryptAndDeEncryptPassword;
 
 
 public class UserDao {
+	private Connection con;
+	private PreparedStatement pst;
+	private ResultSet rs;
+	
+	
+    public UserDao(Connection con) {
+		this.con = con;
+	}
 
-    public int registerUser(User user) throws ClassNotFoundException {
+	public int registerUser(User user) {
         String INSERT_USERS_SQL = "INSERT INTO users" +
             "  (username, email) VALUES " +
             " (?, ?);";
 
         int result = 0;
 
-        Class.forName("com.mysql.jdbc.Driver");
+        try {
 
-        try (Connection connection = DriverManager
-            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
-
-            // Step 2:Create a statement using connection object
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_USERS_SQL)) {
-            preparedStatement.setString(1, user.getUserName());
-            preparedStatement.setString(2, user.getemail());
-          
-          
-
-            System.out.println(preparedStatement);
+            pst = con.prepareStatement(INSERT_USERS_SQL);
+            pst.setString(1, user.getUserName());
+            pst.setString(2, user.getemail());
+        
+            System.out.println(pst);
             // Step 3: Execute the query or update query
-            result = preparedStatement.executeUpdate();
+            result = pst.executeUpdate();
             
 
         } catch (SQLException e) {
@@ -48,21 +50,15 @@ public class UserDao {
         return result;
     }
     
-    public int checkUser(User user) throws ClassNotFoundException {
+    public int checkUser(User user) {
 		
-
-		Class.forName("com.mysql.jdbc.Driver");
 		int id=0;
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
+			pst = con.prepareStatement("select * from users where username = ?");
+			pst.setString(1, user.getUserName());
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from users where username = ?")) {
-			preparedStatement.setString(1, user.getUserName());
-
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
+			System.out.println(pst);
+			rs = pst.executeQuery();
 			rs.next();
 			id=rs.getInt("id");
 
@@ -73,25 +69,20 @@ public class UserDao {
 		return id;
 	}
     
-    public int validate(LoginData loginData) throws ClassNotFoundException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
+    public int validate(LoginData loginData) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
     	String encKeyString = "1234567890123456";
 		EncryptAndDeEncryptPassword encryptAndDeEncryptPassword=new EncryptAndDeEncryptPassword();
 		String encryptpassword=encryptAndDeEncryptPassword.encryptMessage(loginData.getPassword().getBytes(), encKeyString.getBytes());
 		boolean status = false;
 		int id=0;
-		Class.forName("com.mysql.jdbc.Driver");
 
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
+			pst = con.prepareStatement("select * from login_data where username = ? and password = ? ");
+			pst.setString(1, loginData.getUserName());
+			pst.setString(2, encryptpassword);
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from login_data where username = ? and password = ? ")) {
-			preparedStatement.setString(1, loginData.getUserName());
-			preparedStatement.setString(2, encryptpassword);
-
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
+			System.out.println(pst);
+			rs = pst.executeQuery();
 			status = rs.next();
 			if(status) {
 				id=rs.getInt("user_id");
@@ -122,7 +113,7 @@ public class UserDao {
         }
     }
 
-	public void addLoginData(LoginData loginData) throws ClassNotFoundException, InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
+	public void addLoginData(LoginData loginData) throws InvalidKeyException, NoSuchPaddingException, NoSuchAlgorithmException, BadPaddingException, IllegalBlockSizeException {
 		String encKeyString = "1234567890123456";
 		EncryptAndDeEncryptPassword encryptAndDeEncryptPassword=new EncryptAndDeEncryptPassword();
 		String encryptpassword=encryptAndDeEncryptPassword.encryptMessage(loginData.getPassword().getBytes(), encKeyString.getBytes());
@@ -131,23 +122,16 @@ public class UserDao {
 	            "  (username, email, password, user_id) VALUES " +
 	            " (?, ?, ?, ?);";
 
+	    try {
 
-	        Class.forName("com.mysql.jdbc.Driver");
+	         pst = con.prepareStatement(INSERT_LOGIN_SQL);
+	         pst.setString(1, loginData.getUserName());
+	         pst.setString(2, loginData.getEmail());
+	         pst.setString(3, encryptpassword);
+	         pst.setInt(4, loginData.getUser_id());
 
-	        try (Connection connection = DriverManager
-	            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
-
-	            // Step 2:Create a statement using connection object
-	            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_LOGIN_SQL)) {
-	            preparedStatement.setString(1, loginData.getUserName());
-	            preparedStatement.setString(2, loginData.getEmail());
-	            preparedStatement.setString(3, encryptpassword);
-	            preparedStatement.setInt(4, loginData.getUser_id());
-	          
-
-	            System.out.println(preparedStatement);
-	            // Step 3: Execute the query or update query
-	            preparedStatement.executeUpdate();
+	         System.out.println(pst);
+	         pst.executeUpdate();
 
 	        } catch (SQLException e) {
 	            // process sql exception

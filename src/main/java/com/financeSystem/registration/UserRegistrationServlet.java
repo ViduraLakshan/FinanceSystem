@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.financeSystem.connection.DbConnection;
+
 
 
 @WebServlet("/register")
@@ -22,7 +24,11 @@ public class UserRegistrationServlet extends HttpServlet {
     private UserDao userDao;
 
     public void init() {
-    	userDao = new UserDao();
+    	try {
+    		userDao = new UserDao(DbConnection.getConnection());
+    	}catch(Exception e) {
+    		e.printStackTrace();
+    	}
     }
     
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
@@ -54,8 +60,6 @@ public class UserRegistrationServlet extends HttpServlet {
 				userDao.addLoginData(loginData);
 				
 			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

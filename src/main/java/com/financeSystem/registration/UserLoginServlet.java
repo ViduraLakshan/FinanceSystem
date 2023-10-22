@@ -14,6 +14,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.financeSystem.connection.DbConnection;
+
 
 
 @WebServlet("/login")
@@ -23,7 +25,11 @@ public class UserLoginServlet extends HttpServlet {
 	//private AccountDao accountDao;
 
 	public void init() {
-		userDao = new UserDao();
+		try {
+		userDao = new UserDao(DbConnection.getConnection());
+		}catch(Exception e) {
+			e.printStackTrace();
+		}
 		//accountDao =new AccountDao();
 	}
 	
@@ -57,8 +63,6 @@ public class UserLoginServlet extends HttpServlet {
 				session.setAttribute("credentialerror", "user name or password wrong");
 				response.sendRedirect("login.jsp");
 			}
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

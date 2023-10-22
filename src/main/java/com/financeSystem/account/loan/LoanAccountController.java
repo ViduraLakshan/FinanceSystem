@@ -10,6 +10,8 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 
+import com.financeSystem.connection.DbConnection;
+
 
 /**
  * Servlet implementation class LoanAccountController
@@ -20,7 +22,11 @@ public class LoanAccountController extends HttpServlet {
 	private LoanAccountDao loanAccountDao;
 
     public void init() {
-    	loanAccountDao=new LoanAccountDao();
+    	try {
+    	loanAccountDao=new LoanAccountDao(DbConnection.getConnection());
+    	}catch(Exception e) {
+			e.printStackTrace();
+		}
     }
     /**
      * @see HttpServlet#HttpServlet()
@@ -37,14 +43,9 @@ public class LoanAccountController extends HttpServlet {
 		// TODO Auto-generated method stub
 		HttpSession session = request.getSession();
 		int user_id = (int) session.getAttribute("user_id");
-		try {
-			List<LoanAccount> accountList=loanAccountDao.getAccountByUserId(user_id);
-			session.setAttribute("accountList",accountList);
-			response.sendRedirect("loan.jsp");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		List<LoanAccount> accountList=loanAccountDao.getAccountByUserId(user_id);
+		session.setAttribute("accountList",accountList);
+		response.sendRedirect("loan.jsp");
 	}
 
 	/**

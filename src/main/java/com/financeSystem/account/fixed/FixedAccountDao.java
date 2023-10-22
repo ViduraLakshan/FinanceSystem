@@ -1,7 +1,6 @@
 package com.financeSystem.account.fixed;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -13,57 +12,57 @@ import com.financeSystem.account.Account;
 
 public class FixedAccountDao {
 	private final float interestRate=8.5f;
+	private Connection con;
+	private String query;
+	private PreparedStatement pst;
+	private ResultSet rs;
 	
-	public int createFixedDepositAccount(Account fixedDepositAccount) throws ClassNotFoundException {
+	public FixedAccountDao(Connection con) {
+		this.con = con;
+	}
+	public int createFixedDepositAccount(Account fixedDepositAccount){
         String INSERT_ACCOUNT_SQL = "INSERT INTO fixed_accounts" +
             "  (account_no, created_date, maturity_date, fixed_balance, interestRate, interest_earned, user_id, account_type) VALUES " +
             " (?, ?, ?, ?, ?, ?, ?, ?);";
 
         int result = 0;
 
-        Class.forName("com.mysql.jdbc.Driver");
+        //Class.forName("com.mysql.jdbc.Driver");
 
-        try (Connection connection = DriverManager
-            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
-
+        try {
             // Step 2:Create a statement using connection object
-            PreparedStatement preparedStatement = connection.prepareStatement(INSERT_ACCOUNT_SQL)) {
-            preparedStatement.setString(1, fixedDepositAccount.getAccount_no());
-            preparedStatement.setString(2, java.time.LocalDate.now().toString());
-            preparedStatement.setString(3, java.time.LocalDate.now().plusYears(2).toString());
-            preparedStatement.setFloat(4, fixedDepositAccount.getBalance());
-            preparedStatement.setFloat(5, interestRate);
-            preparedStatement.setFloat(6, 0.0f);
-            preparedStatement.setInt(7, fixedDepositAccount.getUser_id());
-            preparedStatement.setString(8, fixedDepositAccount.getAccount_type());
+            pst = con.prepareStatement(INSERT_ACCOUNT_SQL);
+            pst.setString(1, fixedDepositAccount.getAccount_no());
+            pst.setString(2, java.time.LocalDate.now().toString());
+            pst.setString(3, java.time.LocalDate.now().plusYears(2).toString());
+            pst.setFloat(4, fixedDepositAccount.getBalance());
+            pst.setFloat(5, interestRate);
+            pst.setFloat(6, 0.0f);
+            pst.setInt(7, fixedDepositAccount.getUser_id());
+            pst.setString(8, fixedDepositAccount.getAccount_type());
             //User userFromDb= new User();
             
           
 
-            System.out.println(preparedStatement);
+            System.out.println(pst);
             // Step 3: Execute the query or update query
-            result = preparedStatement.executeUpdate();
-
+            result = pst.executeUpdate();
         } catch (SQLException e) {
-            // process sql exception
-            printSQLException(e);
-        }
+			// process sql exception
+			printSQLException(e);
+		}
+        
         return result;
     }
-	public List<FixedDepositAccount> getAccountByUserId(int user_id) throws ClassNotFoundException {
+	public List<FixedDepositAccount> getAccountByUserId(int user_id) {
 		List<FixedDepositAccount> accountList= new ArrayList<FixedDepositAccount>();
-		Class.forName("com.mysql.jdbc.Driver");
 
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
+			pst = con.prepareStatement("select * from fixed_accounts where user_id = ?");
+			pst.setInt(1, user_id);
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from fixed_accounts where user_id = ?")) {
-			preparedStatement.setInt(1, user_id);
-
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
+			System.out.println(pst);
+			rs = pst.executeQuery();
 			 while (rs.next()) {
 				 FixedDepositAccount savingsAccount=new FixedDepositAccount();
 				 savingsAccount.setAccount_no(rs.getString("account_no"));
@@ -84,20 +83,15 @@ public class FixedAccountDao {
 		return accountList;
 	}
 	
-	public FixedDepositAccount getAccountByAccountId(int account_id) throws ClassNotFoundException {
+	public FixedDepositAccount getAccountByAccountId(int account_id) {
 		FixedDepositAccount accountFromDb= new FixedDepositAccount();
-		Class.forName("com.mysql.jdbc.Driver");
 
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
+			pst = con.prepareStatement("select * from fixed_accounts where id = ?"); 
+			pst.setInt(1, account_id);
 
-				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from fixed_accounts where id = ?")) {
-			preparedStatement.setInt(1, account_id);
-
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
+			System.out.println(pst);
+			rs = pst.executeQuery();
 			 while (rs.next()) {
 				 accountFromDb.setAccount_no(rs.getString("account_no"));
 				 accountFromDb.setBalance(rs.getFloat("fixed_balance"));
@@ -116,7 +110,7 @@ public class FixedAccountDao {
 		return accountFromDb;
 	}
 	
-	public String transactionUpdateDepositAccount(int account_id, float amount, String transaction_type) throws ClassNotFoundException {
+	public String transactionUpdateDepositAccount(int account_id, float amount, String transaction_type){
 		FixedDepositAccount accountFromDb= getAccountByAccountId(account_id);
 		String withdrawValid="no";
 		float balance=0.0f;
@@ -137,24 +131,13 @@ public class FixedAccountDao {
 		if(balance!=0.0f) {
 			String UPDATE_ACCOUNT_SQL = "UPDATE fixed_accounts SET fixed_balance = ? WHERE id = ?;";
 
-		        Class.forName("com.mysql.jdbc.Driver");
-
-		        try (Connection connection = DriverManager
-		            .getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
-
-		            // Step 2:Create a statement using connection object
-		            PreparedStatement preparedStatement = connection.prepareStatement(UPDATE_ACCOUNT_SQL)) {
-		            preparedStatement.setFloat(1, balance);
-		            preparedStatement.setInt(2, account_id);
-		            
-		            //User userFromDb= new User();
-		            
-		          
-
-		            System.out.println(preparedStatement);
-		            // Step 3: Execute the query or update query
-		            preparedStatement.executeUpdate();
-		            error="success";
+			try {
+		        pst = con.prepareStatement(UPDATE_ACCOUNT_SQL); 
+		        pst.setFloat(1, balance);
+		        pst.setInt(2, account_id);
+		        System.out.println(pst);
+		        pst.executeUpdate();
+		        error="success";
 		        } catch (SQLException e) {
 		            // process sql exception
 		            printSQLException(e);
@@ -166,30 +149,18 @@ public class FixedAccountDao {
 	
 	public void fixedInterestCalculate() {
     	
-    	try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
 		String getDateNow=java.time.LocalDate.now().toString();
 		String getDate=getDateNow.substring(8);
 		
-		try (Connection connection = DriverManager
-				.getConnection("jdbc:mysql://localhost:3306/fsdb?useSSL=false", "root", "3636");
+		try {
 
 				// Step 2:Create a statement using connection object
-				PreparedStatement preparedStatement = connection
-						.prepareStatement("select * from fixed_accounts where created_date like?")) {
-			preparedStatement.setString(1, "%"+getDate);
+			pst = con.prepareStatement("select * from fixed_accounts where created_date like?");
+			pst.setString(1, "%"+getDate);
 			
-			
-			
-			System.out.println(preparedStatement);
-			ResultSet rs = preparedStatement.executeQuery();
-			
-			
-			
+			System.out.println(pst);
+			rs = pst.executeQuery();
+				
 			 while (rs.next()) {
 				 int id=rs.getInt("id");
 				 float balance=rs.getFloat("fixed_balance");
@@ -200,21 +171,15 @@ public class FixedAccountDao {
 				
 				 
 				 String UPDATE_ACCOUNT_SQL = "UPDATE fixed_accounts SET fixed_balance = ?, interest_earned = ? WHERE id = ?;";
-				 
+				 			           
+				 pst = con.prepareStatement(UPDATE_ACCOUNT_SQL); 
+				 pst.setFloat(1, newBalance);
+				 pst.setFloat(2, interest_earned_new);
+				 pst.setInt(3, id);
 
-				            // Step 2:Create a statement using connection object
-				            PreparedStatement preparedStatement2 = connection.prepareStatement(UPDATE_ACCOUNT_SQL); 
-				            preparedStatement2.setFloat(1, newBalance);
-				            preparedStatement2.setFloat(2, interest_earned_new);
-				            preparedStatement2.setInt(3, id);
+				 System.out.println(pst);
 				            
-				            //User userFromDb= new User();
-				            
-				          
-
-				            System.out.println(preparedStatement2);
-				            // Step 3: Execute the query or update query
-				            preparedStatement2.executeUpdate();
+				 pst.executeUpdate();
 				 
 			 }
 
